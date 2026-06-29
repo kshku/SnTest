@@ -42,7 +42,7 @@ jobs:
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_FLAGS="-Wall -Wextra -Werror" \
-            -DSN_MEMORY_BUILD_TEST=ON
+            -DSN_TEST_BUILD_TEST=ON
 
       - name: Build
         run: cmake --build build
@@ -62,7 +62,7 @@ jobs:
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all" \
-            -DSN_MEMORY_BUILD_TEST=ON
+            -DSN_TEST_BUILD_TEST=ON
 
       - name: Build
         run: cmake --build build
