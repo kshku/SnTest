@@ -12,6 +12,11 @@ FetchContent_Declare(sncore
     GIT_TAG v0.2.0
 )
 FetchContent_MakeAvailable(sncore)
+FetchContent_Declare(snlogger
+    GIT_REPOSITORY https://github.com/kshku/SnLogger.git
+    GIT_TAG v0.2.0
+)
+FetchContent_MakeAvailable(snlogger)
 
 add_library(sn_test_configs INTERFACE)
 
