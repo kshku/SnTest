@@ -1,5 +1,7 @@
 #include "sntest/sntest.h"
 
+#include "sntest/logger.h"
+
 typedef struct SnTestStats {
     uint32_t total, passed, failed, skipped;
 } SnTestStats;
@@ -26,19 +28,22 @@ static void run_tests(void) {
 #endif
         if (!it) continue;
 
-        // log_info("Running test: %s", it->name);
+        log_msg("Running test: %s...\n", it->name);
         SnTestResult res = it->fn();
 
         context.stats.total++;
         switch (res) {
             case SN_TEST_PASS:
                 context.stats.passed++;
+                log_msg("%s -> PASS\n", it->name);
                 break;
             case SN_TEST_FAIL:
                 context.stats.failed++;
+                log_msg("%s -> FAIL\n", it->name);
                 break;
             case SN_TEST_SKIP:
                 context.stats.skipped++;
+                log_msg("%s -> SKIP\n", it->name);
                 break;
             default:
                 break;
@@ -49,5 +54,7 @@ static void run_tests(void) {
 int sn_test_run_all_tests(SnTestConfig *config) {
     SN_UNUSED(config);
     run_tests();
+    log_msg("\nSummary\n------------\n", NULL);
+    log_msg("", NULL);
     return context.stats.failed > 0;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sntest/api.h"
+#include "sntest/logger.h"
 
 #include <sncore/defines.h>
 
@@ -76,9 +77,11 @@ void sn_test_deinit(void);
 
 #define SN_TEST_RUN()                             \
     int main(void) {                              \
+        sn_test_logger_init();                    \
         SnTestConfig config = {0};                \
         if (!sn_test_init(&config)) return -1;    \
         int ret = sn_test_run_all_tests(&config); \
         sn_test_deinit();                         \
+        sn_test_logger_deinit();                  \
         return ret;                               \
     }
