@@ -49,22 +49,20 @@ void sn_test_logger_deinit(void) {
 void sn_test_log_msg(SnTestColor fg, SnTestColor bg, int mode, const char *fmt, ...) {
     char buffer[1024] = {0};
     int buffer_size = SN_ARRAY_LENGTH(buffer);
-    int len = 0;
+    int len = snprintf(buffer, buffer_size, "\x1b[");
 
-    if (mode == MODE_DEFAULT) {
-        len = snprintf(buffer, buffer_size, "\x1b[%d;%dm%s\x1b[0m", get_color_value(bg, false),
-                       get_color_value(fg, true), fmt);
-    } else {
-        len = snprintf(buffer, buffer_size, "\x1b[");
+    // set the modes
+    if (mode != MODE_DEFAULT) {
         int i = 1;
         while (mode) {
             if (mode & 1) len += snprintf(buffer + len, buffer_size - len, "%d;", i);
             ++i;
             mode >>= 1;
         }
-        len += snprintf(buffer + len, buffer_size - len, "%d;%dm%s\x1b[0m",
-                        get_color_value(bg, false), get_color_value(fg, true), fmt);
     }
+
+    len += snprintf(buffer + len, buffer_size - len, "%d;%dm%s\x1b[0m", get_color_value(bg, false),
+                    get_color_value(fg, true), fmt);
 
     if (len >= buffer_size) {
         sn_test_log_msg(COLOR_WHITE, COLOR_RED, MODE_BOLD,
