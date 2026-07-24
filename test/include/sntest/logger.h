@@ -40,13 +40,24 @@ void sn_test_log_msg(SnTestColor fg, SnTestColor bg, int mode, const char *fmt, 
 
 #define log_msg(msg, ...)                                                           \
     sn_test_log_msg(COLOR_DEFAULT, COLOR_DEFAULT, MODE_DEFAULT, msg, ##__VA_ARGS__)
+
 #define log_msg_fg(fg, msg, ...)                                         \
     sn_test_log_msg(fg, COLOR_DEFAULT, MODE_DEFAULT, msg, ##__VA_ARGS__)
+
+#define log_msg_fg_mode(fg, mode, msg, ...)                      \
+    sn_test_log_msg(fg, COLOR_DEFAULT, mode, msg, ##__VA_ARGS__)
+
 #define log_msg_bg(bg, msg, ...)                                         \
     sn_test_log_msg(COLOR_DEFAULT, bg, MODE_DEFAULT, msg, ##__VA_ARGS__)
+
+#define log_msg_bg_mode(bg, mode, msg, ...)                      \
+    sn_test_log_msg(COLOR_DEFAULT, bg, mode, msg, ##__VA_ARGS__)
+
 #define log_msg_mode(mode, msg, ...)                                        \
     sn_test_log_msg(COLOR_DEFAULT, COLOR_DEFAULT, mode, msg, ##__VA_ARGS__)
+
 #define log_msg_color(fg, bg, msg, ...) sn_test_log_msg(fg, bg, MODE_DEFAULT, msg, ##__VA_ARGS__)
+
 #define log_msg_style(fg, bg, mode, msg, ...) sn_test_log_msg(fg, bg, mode, msg, ##__VA_ARGS__)
 
 void sn_test_logger_init(void);

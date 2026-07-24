@@ -55,6 +55,10 @@ int sn_test_run_all_tests(SnTestConfig *config) {
     SN_UNUSED(config);
     run_tests();
     log_msg("\nSummary\n------------\n", NULL);
-    log_msg("", NULL);
+    log_msg("Total: %d\n\n", context.stats.total);
+    log_msg_fg(COLOR_GREEN, "Passed: %d\n", context.stats.passed);
+    log_msg_fg(COLOR_RED, "Failed: %d\n", context.stats.failed);
+    log_msg_fg(COLOR_YELLOW, "Skipped: %d\n", context.stats.skipped);
+    log_msg("------------\n", NULL);
     return context.stats.failed > 0;
 }
