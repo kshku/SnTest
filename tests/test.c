@@ -1,11 +1,21 @@
 #include <sntest/sntest.h>
 
-bool sn_test_init(SnTestConfig *config) {
+SN_TEST_INIT() {
     SN_UNUSED(config);
+    log_msg("Initializing tests\n", NULL);
     return true;
 }
 
-void sn_test_deinit(void) {
+SN_TEST_DEINIT() {
+    log_msg("Deinitializing tests\n", NULL);
+}
+
+SN_TEST_SETUP() {
+    log_msg("Setting up test\n", NULL);
+}
+
+SN_TEST_TEARDOWN() {
+    log_msg("Tearing down test\n", NULL);
 }
 
 SN_TEST_ADD(print_test) {
