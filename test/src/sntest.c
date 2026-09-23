@@ -4,6 +4,7 @@
 
 #include <sntime/sntime.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct SnTestStats {
     uint32_t total, passed, failed, skipped;
@@ -79,17 +80,20 @@ static void run_tests(SnTestConfig *config) {
 #if defined(SN_OS_MAC)
     size_t count = 0;
     SnTest **tests = SN_TEST_BEGIN_COUNT(count);
-
-    for (size_t i = 0; i < count; ++i) {
-        SnTest *it = tests[i];
 #else
     SnTest **begin = SN_TEST_BEGIN();
     SnTest **end = SN_TEST_END();
-
-    for (SnTest **p = begin; p < end; ++p) {
-        SnTest *it = *p;
+    SnTest **tests = begin;
+    size_t count = (size_t)(end - begin);
 #endif
+    if (!tests || count == 0) return;
+
+    const char *filter = (config->filter && config->filter[0]) ? config->filter : NULL;
+
+    for (size_t k = 0; k < count; ++k) {
+        SnTest *it = tests[k];
         if (!it) continue;
+        if (filter && !strstr(it->name, filter)) continue;
 
         log_msg("Running test: %s...\n", it->name);
         SnTimePoint start = sn_time_point_now();
@@ -101,6 +105,13 @@ static void run_tests(SnTestConfig *config) {
         char time_buf[32];
         format_duration(elapsed, time_buf, sizeof(time_buf));
 
+        if (res == SN_TEST_PASS && config->timeout_ns && elapsed > config->timeout_ns) {
+            char limit_buf[32];
+            format_duration(config->timeout_ns, limit_buf, sizeof(limit_buf));
+            log_msg("%s -> timed out (%s > limit %s)\n", it->name, time_buf, limit_buf);
+            res = SN_TEST_FAIL;
+        }
+
         context.stats.total++;
         switch (res) {
             case SN_TEST_PASS:
@@ -110,8 +121,8 @@ static void run_tests(SnTestConfig *config) {
             case SN_TEST_FAIL:
                 context.stats.failed++;
                 log_msg("%s -> FAIL (%s)\n", it->name, time_buf);
-                if (config->fail_fast) {
-                    log_msg("Stopping after first failure: fail_fast enabled\n", NULL);
+                if (config->max_failures && context.stats.failed >= config->max_failures) {
+                    log_msg("Stopping: max_failures limit reached\n", NULL);
                     return;
                 }
                 break;
@@ -126,7 +137,6 @@ static void run_tests(SnTestConfig *config) {
 }
 
 int sn_test_run_all_tests(SnTestConfig *config) {
-    SN_UNUSED(config);
     SnTimePoint total_start = sn_time_point_now();
 
     resolve_hooks();
@@ -135,6 +145,9 @@ int sn_test_run_all_tests(SnTestConfig *config) {
         log_msg("Failed to initialize tests\n", NULL);
         return -1;
     }
+
+    if (config->no_color) sn_test_logger_disable_color();
+    sn_test_set_log_level(config->log_level);
 
     run_tests(config);
 

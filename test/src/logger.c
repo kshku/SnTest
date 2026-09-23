@@ -42,6 +42,11 @@ void sn_test_set_log_level(SnLogLevel level) {
     sn_static_logger_set_level(&sl, level);
 }
 
+void sn_test_logger_disable_color(void) {
+    sink_data.color_enabled[0] = false;
+    sink_data.color_enabled[1] = false;
+}
+
 void sn_test_logger_deinit(void) {
     sn_static_logger_deinit(&sl);
 }

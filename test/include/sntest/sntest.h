@@ -4,6 +4,7 @@
 #include "sntest/logger.h"
 
 #include <sncore/defines.h>
+#include <sntime/sntime.h>
 
 typedef enum SnTestResult {
     SN_TEST_PASS,
@@ -26,7 +27,11 @@ typedef enum SnTestHookType {
 } SnTestHookType;
 
 typedef struct SnTestConfig {
-    bool fail_fast;
+    uint32_t max_failures;
+    SnTimeNs timeout_ns;
+    const char *filter;
+    bool no_color;
+    SnLogLevel log_level;
 } SnTestConfig;
 
 typedef bool (*sn_test_init_fn)(SnTestConfig *config);

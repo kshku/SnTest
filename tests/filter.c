@@ -1,17 +1,17 @@
 #include <sntest/sntest.h>
 
 SN_TEST_INIT() {
-    config->fail_fast = true;
+    config->filter = "banana";
     return true;
 }
 
-SN_TEST_ADD(fail_a) {
+SN_TEST_ADD(apple) {
     SN_TEST_ASSERT_TRUE(false);
     return SN_TEST_PASS;
 }
 
-SN_TEST_ADD(fail_b) {
-    SN_TEST_ASSERT_TRUE(false);
+SN_TEST_ADD(banana) {
+    SN_TEST_ASSERT_TRUE(true);
     return SN_TEST_PASS;
 }
 
