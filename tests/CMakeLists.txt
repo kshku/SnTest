@@ -29,9 +29,22 @@ target_link_libraries(sn_test_assert_fail PRIVATE sntest)
 add_test(NAME sn_test_assert_fail COMMAND sn_test_assert_fail)
 set_tests_properties(sn_test_assert_fail PROPERTIES WILL_FAIL TRUE)
 
-add_executable(sn_test_fail_fast)
-target_sources(sn_test_fail_fast PRIVATE fail_fast.c)
-target_link_libraries(sn_test_fail_fast PRIVATE sntest)
+add_executable(sn_test_max_failures)
+target_sources(sn_test_max_failures PRIVATE max_failures.c)
+target_link_libraries(sn_test_max_failures PRIVATE sntest)
 
-add_test(NAME sn_test_fail_fast COMMAND sn_test_fail_fast)
-set_tests_properties(sn_test_fail_fast PROPERTIES WILL_FAIL TRUE)
+add_test(NAME sn_test_max_failures COMMAND sn_test_max_failures)
+set_tests_properties(sn_test_max_failures PROPERTIES WILL_FAIL TRUE)
+
+add_executable(sn_test_filter)
+target_sources(sn_test_filter PRIVATE filter.c)
+target_link_libraries(sn_test_filter PRIVATE sntest)
+
+add_test(NAME sn_test_filter COMMAND sn_test_filter)
+
+add_executable(sn_test_timeout)
+target_sources(sn_test_timeout PRIVATE timeout.c)
+target_link_libraries(sn_test_timeout PRIVATE sntest)
+
+add_test(NAME sn_test_timeout COMMAND sn_test_timeout)
+set_tests_properties(sn_test_timeout PROPERTIES WILL_FAIL TRUE)

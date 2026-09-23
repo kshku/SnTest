@@ -62,4 +62,5 @@ void sn_test_log_msg(SnTestColor fg, SnTestColor bg, int mode, const char *fmt, 
 
 void sn_test_logger_init(void);
 void sn_test_set_log_level(SnLogLevel level);
+void sn_test_logger_disable_color(void);
 void sn_test_logger_deinit(void);
