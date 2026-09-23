@@ -25,6 +25,12 @@ FetchContent_Declare(snthreads
 )
 FetchContent_MakeAvailable(snthreads)
 
+FetchContent_Declare(sntime
+    GIT_REPOSITORY https://github.com/kshku/SnTime.git
+    GIT_TAG v0.2.0
+)
+FetchContent_MakeAvailable(sntime)
+
 add_library(sn_test_configs INTERFACE)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
