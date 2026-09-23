@@ -34,3 +34,4 @@ target_sources(sn_test_fail_fast PRIVATE fail_fast.c)
 target_link_libraries(sn_test_fail_fast PRIVATE sntest)
 
 add_test(NAME sn_test_fail_fast COMMAND sn_test_fail_fast)
+set_tests_properties(sn_test_fail_fast PROPERTIES WILL_FAIL TRUE)
