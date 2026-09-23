@@ -28,3 +28,9 @@ target_link_libraries(sn_test_assert_fail PRIVATE sntest)
 
 add_test(NAME sn_test_assert_fail COMMAND sn_test_assert_fail)
 set_tests_properties(sn_test_assert_fail PROPERTIES WILL_FAIL TRUE)
+
+add_executable(sn_test_fail_fast)
+target_sources(sn_test_fail_fast PRIVATE fail_fast.c)
+target_link_libraries(sn_test_fail_fast PRIVATE sntest)
+
+add_test(NAME sn_test_fail_fast COMMAND sn_test_fail_fast)

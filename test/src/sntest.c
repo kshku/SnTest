@@ -75,7 +75,7 @@ static void resolve_hooks(void) {
     if (teardown) context.teardown = teardown->fn.teardown;
 }
 
-static void run_tests(void) {
+static void run_tests(SnTestConfig *config) {
 #if defined(SN_OS_MAC)
     size_t count = 0;
     SnTest **tests = SN_TEST_BEGIN_COUNT(count);
@@ -110,6 +110,10 @@ static void run_tests(void) {
             case SN_TEST_FAIL:
                 context.stats.failed++;
                 log_msg("%s -> FAIL (%s)\n", it->name, time_buf);
+                if (config->fail_fast) {
+                    log_msg("Stopping after first failure: fail_fast enabled\n", NULL);
+                    return;
+                }
                 break;
             case SN_TEST_SKIP:
                 context.stats.skipped++;
@@ -132,7 +136,7 @@ int sn_test_run_all_tests(SnTestConfig *config) {
         return -1;
     }
 
-    run_tests();
+    run_tests(config);
 
     if (context.deinit) context.deinit();
 

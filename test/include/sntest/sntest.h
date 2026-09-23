@@ -26,7 +26,7 @@ typedef enum SnTestHookType {
 } SnTestHookType;
 
 typedef struct SnTestConfig {
-    bool placeholder;
+    bool fail_fast;
 } SnTestConfig;
 
 typedef bool (*sn_test_init_fn)(SnTestConfig *config);
