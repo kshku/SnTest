@@ -169,3 +169,5 @@ SN_TEST_API int sn_test_run_all_tests(SnTestConfig *config);
         sn_test_logger_deinit();                  \
         return ret;                               \
     }
+
+#include "sntest/asserts.h"
