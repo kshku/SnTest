@@ -2,9 +2,13 @@
 
 #include "sntest/logger.h"
 
+#include <snthreads/atomics.h>
+#include <snthreads/thread.h>
 #include <sntime/sntime.h>
 #include <stdio.h>
 #include <string.h>
+
+#define SN_TEST_MAX_THREADS 64
 
 typedef struct SnTestStats {
     uint32_t total, passed, failed, skipped;
@@ -19,6 +23,18 @@ typedef struct SnTestContext {
 } SnTestContext;
 
 static SnTestContext context = {0};
+
+typedef struct SnTestRunner {
+    SnTestConfig *config;
+    SnTest **tests;
+    size_t count;
+    const char *filter;
+    sn_atomic_uint32_t next;
+    sn_atomic_uint32_t total, passed, failed, skipped;
+    sn_atomic_flag stop;
+} SnTestRunner;
+
+static void *run_test_worker(void *data);
 
 static void format_duration(SnTimeNs ns, char *buf, size_t cap) {
     if (ns < 1000) {
@@ -76,6 +92,62 @@ static void resolve_hooks(void) {
     if (teardown) context.teardown = teardown->fn.teardown;
 }
 
+static void run_one_test(SnTestRunner *runner, SnTest *it) {
+    log_msg("Running test: %s...\n", it->name);
+    SnTimePoint start = sn_time_point_now();
+    if (context.setup) context.setup();
+    SnTestResult res = it->fn();
+    if (context.teardown) context.teardown();
+    SnTimeNs elapsed = sn_time_elapsed_ns(start, sn_time_point_now());
+
+    char time_buf[32];
+    format_duration(elapsed, time_buf, sizeof(time_buf));
+
+    if (res == SN_TEST_PASS && runner->config->timeout_ns && elapsed > runner->config->timeout_ns) {
+        char limit_buf[32];
+        format_duration(runner->config->timeout_ns, limit_buf, sizeof(limit_buf));
+        log_msg("%s -> timed out (%s > limit %s)\n", it->name, time_buf, limit_buf);
+        res = SN_TEST_FAIL;
+    }
+
+    sn_atomic_fetch_add(&runner->total, 1);
+    switch (res) {
+        case SN_TEST_PASS:
+            sn_atomic_fetch_add(&runner->passed, 1);
+            log_msg("%s -> PASS (%s)\n", it->name, time_buf);
+            break;
+        case SN_TEST_FAIL: {
+            uint32_t failed = sn_atomic_fetch_add(&runner->failed, 1);
+            log_msg("%s -> FAIL (%s)\n", it->name, time_buf);
+            if (runner->config->max_failures && failed + 1 >= runner->config->max_failures) {
+                sn_atomic_flag_test_and_set(&runner->stop);
+            }
+            break;
+        }
+        case SN_TEST_SKIP:
+            sn_atomic_fetch_add(&runner->skipped, 1);
+            log_msg("%s -> SKIP (%s)\n", it->name, time_buf);
+            break;
+        default:
+            break;
+    }
+}
+
+static void *run_test_worker(void *data) {
+    SnTestRunner *runner = (SnTestRunner *)data;
+
+    while (!sn_atomic_flag_load(&runner->stop)) {
+        uint32_t index = sn_atomic_fetch_add(&runner->next, 1);
+        if (index >= runner->count) break;
+        SnTest *it = runner->tests[index];
+        if (!it) continue;
+        if (runner->filter && !strstr(it->name, runner->filter)) continue;
+        run_one_test(runner, it);
+    }
+
+    return NULL;
+}
+
 static void run_tests(SnTestConfig *config) {
 #if defined(SN_OS_MAC)
     size_t count = 0;
@@ -88,52 +160,44 @@ static void run_tests(SnTestConfig *config) {
 #endif
     if (!tests || count == 0) return;
 
-    const char *filter = (config->filter && config->filter[0]) ? config->filter : NULL;
+    SnTestRunner runner = {0};
+    runner.config = config;
+    runner.tests = tests;
+    runner.count = count;
+    runner.filter = (config->filter && config->filter[0]) ? config->filter : NULL;
 
-    for (size_t k = 0; k < count; ++k) {
-        SnTest *it = tests[k];
-        if (!it) continue;
-        if (filter && !strstr(it->name, filter)) continue;
+    uint32_t thread_count
+        = config->thread_count > SN_TEST_MAX_THREADS ? SN_TEST_MAX_THREADS : config->thread_count;
 
-        log_msg("Running test: %s...\n", it->name);
-        SnTimePoint start = sn_time_point_now();
-        if (context.setup) context.setup();
-        SnTestResult res = it->fn();
-        if (context.teardown) context.teardown();
-        SnTimeNs elapsed = sn_time_elapsed_ns(start, sn_time_point_now());
+    if (thread_count > 1 && sn_thread_init()) {
+        SnThread threads[SN_TEST_MAX_THREADS];
 
-        char time_buf[32];
-        format_duration(elapsed, time_buf, sizeof(time_buf));
-
-        if (res == SN_TEST_PASS && config->timeout_ns && elapsed > config->timeout_ns) {
-            char limit_buf[32];
-            format_duration(config->timeout_ns, limit_buf, sizeof(limit_buf));
-            log_msg("%s -> timed out (%s > limit %s)\n", it->name, time_buf, limit_buf);
-            res = SN_TEST_FAIL;
+        uint32_t spawned = 0;
+        for (uint32_t i = 0; i < thread_count; ++i) {
+            if (sn_thread_create(&threads[spawned], run_test_worker, &runner)) {
+                spawned++;
+            }
         }
 
-        context.stats.total++;
-        switch (res) {
-            case SN_TEST_PASS:
-                context.stats.passed++;
-                log_msg("%s -> PASS (%s)\n", it->name, time_buf);
-                break;
-            case SN_TEST_FAIL:
-                context.stats.failed++;
-                log_msg("%s -> FAIL (%s)\n", it->name, time_buf);
-                if (config->max_failures && context.stats.failed >= config->max_failures) {
-                    log_msg("Stopping: max_failures limit reached\n", NULL);
-                    return;
-                }
-                break;
-            case SN_TEST_SKIP:
-                context.stats.skipped++;
-                log_msg("%s -> SKIP (%s)\n", it->name, time_buf);
-                break;
-            default:
-                break;
+        for (uint32_t i = 0; i < spawned; ++i) {
+            sn_thread_join(&threads[i], NULL);
         }
+        sn_thread_shutdown();
+
+        // Claim the remaining tests (e.g. when some thread creation attempts failed).
+        run_test_worker(&runner);
+    } else {
+        run_test_worker(&runner);
     }
+
+    if (sn_atomic_flag_load(&runner.stop)) {
+        log_msg("Stopping: max_failures limit reached\n", NULL);
+    }
+
+    context.stats.total = sn_atomic_load(&runner.total);
+    context.stats.passed = sn_atomic_load(&runner.passed);
+    context.stats.failed = sn_atomic_load(&runner.failed);
+    context.stats.skipped = sn_atomic_load(&runner.skipped);
 }
 
 int sn_test_run_all_tests(SnTestConfig *config) {

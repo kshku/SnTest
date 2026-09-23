@@ -28,6 +28,7 @@ typedef enum SnTestHookType {
 
 typedef struct SnTestConfig {
     uint32_t max_failures;
+    uint32_t thread_count;
     SnTimeNs timeout_ns;
     const char *filter;
     bool no_color;

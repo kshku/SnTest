@@ -48,3 +48,9 @@ target_link_libraries(sn_test_timeout PRIVATE sntest)
 
 add_test(NAME sn_test_timeout COMMAND sn_test_timeout)
 set_tests_properties(sn_test_timeout PROPERTIES WILL_FAIL TRUE)
+
+add_executable(sn_test_parallel)
+target_sources(sn_test_parallel PRIVATE parallel.c)
+target_link_libraries(sn_test_parallel PRIVATE sntest)
+
+add_test(NAME sn_test_parallel COMMAND sn_test_parallel)
