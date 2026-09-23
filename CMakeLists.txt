@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(snlogger)
 
 FetchContent_Declare(snthreads
     GIT_REPOSITORY https://github.com/kshku/SnThreads.git
-    GIT_TAG v0.2.0
+    GIT_TAG v0.2.1
 )
 FetchContent_MakeAvailable(snthreads)
 
