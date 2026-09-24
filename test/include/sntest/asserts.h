@@ -5,6 +5,13 @@
 #include <stddef.h>
 #include <string.h>
 
+/**
+ * @brief Assert that x is truthy.
+ *
+ * On failure, prints a diagnostic and returns SN_TEST_FAIL from the test.
+ *
+ * @param x The expression to check.
+ */
 #define SN_TEST_ASSERT(x)                                                                                    \
     do {                                                                                                     \
         if (!(x)) {                                                                                          \
@@ -13,6 +20,11 @@
         }                                                                                                    \
     } while (0)
 
+/**
+ * @brief Assert that x is true.
+ *
+ * @param x The expression to check.
+ */
 #define SN_TEST_ASSERT_TRUE(x)                                                                    \
     do {                                                                                          \
         if (!(x)) {                                                                               \
@@ -22,6 +34,11 @@
         }                                                                                         \
     } while (0)
 
+/**
+ * @brief Assert that x is false.
+ *
+ * @param x The expression to check.
+ */
 #define SN_TEST_ASSERT_FALSE(x)                                                                    \
     do {                                                                                           \
         if (x) {                                                                                   \
@@ -31,6 +48,12 @@
         }                                                                                          \
     } while (0)
 
+/**
+ * @brief Assert that a is equal to b.
+ *
+ * @param a The left-hand side value.
+ * @param b The right-hand side value.
+ */
 #define SN_TEST_ASSERT_EQ(a, b)                                                                  \
     do {                                                                                         \
         if ((a) != (b)) {                                                                        \
@@ -40,6 +63,12 @@
         }                                                                                        \
     } while (0)
 
+/**
+ * @brief Assert that a is not equal to b.
+ *
+ * @param a The left-hand side value.
+ * @param b The right-hand side value.
+ */
 #define SN_TEST_ASSERT_NEQ(a, b)                                                                 \
     do {                                                                                         \
         if ((a) == (b)) {                                                                        \
@@ -49,6 +78,12 @@
         }                                                                                        \
     } while (0)
 
+/**
+ * @brief Assert that a is less than b.
+ *
+ * @param a The left-hand side value.
+ * @param b The right-hand side value.
+ */
 #define SN_TEST_ASSERT_LT(a, b)                                                                 \
     do {                                                                                        \
         if (!((a) < (b))) {                                                                     \
@@ -58,6 +93,12 @@
         }                                                                                       \
     } while (0)
 
+/**
+ * @brief Assert that a is less than or equal to b.
+ *
+ * @param a The left-hand side value.
+ * @param b The right-hand side value.
+ */
 #define SN_TEST_ASSERT_LE(a, b)                                                                  \
     do {                                                                                         \
         if (!((a) <= (b))) {                                                                     \
@@ -67,6 +108,12 @@
         }                                                                                        \
     } while (0)
 
+/**
+ * @brief Assert that a is greater than b.
+ *
+ * @param a The left-hand side value.
+ * @param b The right-hand side value.
+ */
 #define SN_TEST_ASSERT_GT(a, b)                                                                 \
     do {                                                                                        \
         if (!((a) > (b))) {                                                                     \
@@ -76,6 +123,12 @@
         }                                                                                       \
     } while (0)
 
+/**
+ * @brief Assert that a is greater than or equal to b.
+ *
+ * @param a The left-hand side value.
+ * @param b The right-hand side value.
+ */
 #define SN_TEST_ASSERT_GE(a, b)                                                                  \
     do {                                                                                         \
         if (!((a) >= (b))) {                                                                     \
@@ -85,6 +138,11 @@
         }                                                                                        \
     } while (0)
 
+/**
+ * @brief Assert that x is NULL.
+ *
+ * @param x The pointer to check.
+ */
 #define SN_TEST_ASSERT_NULL(x)                                                                    \
     do {                                                                                          \
         if ((x) != NULL) {                                                                        \
@@ -94,6 +152,11 @@
         }                                                                                         \
     } while (0)
 
+/**
+ * @brief Assert that x is not NULL.
+ *
+ * @param x The pointer to check.
+ */
 #define SN_TEST_ASSERT_NOT_NULL(x)                                                                \
     do {                                                                                          \
         if ((x) == NULL) {                                                                        \
@@ -103,6 +166,12 @@
         }                                                                                         \
     } while (0)
 
+/**
+ * @brief Assert that two pointers are equal.
+ *
+ * @param a The left-hand side pointer.
+ * @param b The right-hand side pointer.
+ */
 #define SN_TEST_ASSERT_PTR_EQ(a, b)                                                               \
     do {                                                                                          \
         if ((void *)(a) != (void *)(b)) {                                                         \
@@ -112,6 +181,12 @@
         }                                                                                         \
     } while (0)
 
+/**
+ * @brief Assert that two pointers are not equal.
+ *
+ * @param a The left-hand side pointer.
+ * @param b The right-hand side pointer.
+ */
 #define SN_TEST_ASSERT_PTR_NEQ(a, b)                                                              \
     do {                                                                                          \
         if ((void *)(a) == (void *)(b)) {                                                         \
@@ -121,6 +196,12 @@
         }                                                                                         \
     } while (0)
 
+/**
+ * @brief Assert that two strings are equal (strcmp, NULL-safe).
+ *
+ * @param a The left-hand side string.
+ * @param b The right-hand side string.
+ */
 #define SN_TEST_ASSERT_STR_EQ(a, b)                                                                             \
     do {                                                                                                        \
         const char *sn_test_str_a = (a);                                                                        \
@@ -139,6 +220,12 @@
         }                                                                                                       \
     } while (0)
 
+/**
+ * @brief Assert that two strings are not equal (strcmp, NULL-safe).
+ *
+ * @param a The left-hand side string.
+ * @param b The right-hand side string.
+ */
 #define SN_TEST_ASSERT_STR_NEQ(a, b)                                                                            \
     do {                                                                                                        \
         const char *sn_test_str_a = (a);                                                                        \
@@ -155,6 +242,13 @@
         }                                                                                                       \
     } while (0)
 
+/**
+ * @brief Assert that the first n characters of two strings are equal (strncmp, NULL-safe).
+ *
+ * @param a The left-hand side string.
+ * @param b The right-hand side string.
+ * @param n Number of characters to compare.
+ */
 #define SN_TEST_ASSERT_STR_N_EQ(a, b, n)                                                            \
     do {                                                                                            \
         const char *sn_test_str_a = (a);                                                            \
@@ -172,6 +266,12 @@
         }                                                                                           \
     } while (0)
 
+/**
+ * @brief Assert that two chars are equal.
+ *
+ * @param a The left-hand side char.
+ * @param b The right-hand side char.
+ */
 #define SN_TEST_ASSERT_CHAR_EQ(a, b)                                                         \
     do {                                                                                     \
         char sn_test_char_a = (a);                                                           \
@@ -187,6 +287,12 @@
         }                                                                                    \
     } while (0)
 
+/**
+ * @brief Assert that two chars are not equal.
+ *
+ * @param a The left-hand side char.
+ * @param b The right-hand side char.
+ */
 #define SN_TEST_ASSERT_CHAR_NEQ(a, b)                                                         \
     do {                                                                                      \
         char sn_test_char_a = (a);                                                            \
@@ -200,6 +306,13 @@
         }                                                                                     \
     } while (0)
 
+/**
+ * @brief Assert that two memory blocks are equal (memcmp).
+ *
+ * @param a The left-hand side memory block.
+ * @param b The right-hand side memory block.
+ * @param size Number of bytes to compare.
+ */
 #define SN_TEST_ASSERT_MEM_EQ(a, b, size)                                            \
     do {                                                                             \
         const void *sn_test_mem_a = (a);                                             \
@@ -214,6 +327,13 @@
         }                                                                            \
     } while (0)
 
+/**
+ * @brief Assert that two memory blocks are not equal (memcmp).
+ *
+ * @param a The left-hand side memory block.
+ * @param b The right-hand side memory block.
+ * @param size Number of bytes to compare.
+ */
 #define SN_TEST_ASSERT_MEM_NEQ(a, b, size)                                           \
     do {                                                                             \
         const void *sn_test_mem_a = (a);                                             \
