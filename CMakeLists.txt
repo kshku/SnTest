@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.31)
 
-project(SnTest VERSION 0.1.0 DESCRIPTION "Testing util" LANGUAGES C)
+project(SnTest VERSION 0.2.0 DESCRIPTION "Testing util" LANGUAGES C)
 
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -50,7 +50,6 @@ target_compile_definitions(sn_test_configs INTERFACE
     SN_TEST_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
-option(SN_TEST_BUILD_SHARED "Build shared library" OFF)
 option(SN_TEST_BUILD_TEST "Build tests" OFF)
 
 add_subdirectory(docs)
