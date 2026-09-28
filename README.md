@@ -176,8 +176,11 @@ cmake --build build
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `SN_TEST_BUILD_SHARED` | `OFF` | Build as shared library |
 | `SN_TEST_BUILD_TEST` | `OFF` | Build tests |
+
+SnTest is always built as a static library. Tests register themselves into a
+linker section, which a shared library cannot see from the executable that
+defines the tests.
 
 ## Documentation
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] - 2026-09-28
+
+### Removed
+- Remove the shared library build, SnTest is always static now. Tests register
+  into a linker section that the linker delimits with __start_sn_tests and
+  __stop_sn_tests, and a shared libsntest carries its own, empty, copy of that
+  registry, which the runner then reads instead of the executable's. Hiding
+  those symbols needs a linker version script, which only GNU ld has
+
 ## [0.1.0] - 2026-09-24
 
 - First release. See [0.0.0] section in CHANGELOG.md for full changelog.
