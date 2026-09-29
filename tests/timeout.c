@@ -1,7 +1,7 @@
 #include <sntest/sntest.h>
 
 SN_TEST_INIT() {
-    config->timeout_ns = 1000000;
+    test_config->timeout_ns = 1000000;
     return true;
 }
 

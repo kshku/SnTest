@@ -39,7 +39,7 @@ A test that takes longer than `timeout_ns` is reported as `FAIL`, even if it ret
 
 | Macro | Signature | Called |
 |-------|-----------|--------|
-| `SN_TEST_INIT()` | `bool (SnTestConfig *config)` | Once, before any test; `false` aborts the run |
+| `SN_TEST_INIT()` | `bool (SnTestConfig *test_config)` | Once, before any test; `false` aborts the run |
 | `SN_TEST_DEINIT()` | `void (void)` | Once, after all tests |
 | `SN_TEST_SETUP()` | `void (void)` | Before each test |
 | `SN_TEST_TEARDOWN()` | `void (void)` | After each test |
@@ -58,14 +58,44 @@ Tests configure the runner through the `SnTestConfig` passed to the `SN_TEST_INI
 | `no_color` | Disable ANSI colors in output |
 | `log_level` | Minimum `SnLogLevel` to print |
 
-### Programmatic Entry Point
+### Command Line
+
+`SN_TEST_RUN()` generates a `main()` that reads a command line, so every field above can be
+set without touching the source.
+
+| Option | Sets |
+|--------|-------|
+| `--filter <substring>` | `filter` |
+| `--max-failures <n>` | `max_failures` |
+| `--threads <n>` | `thread_count` |
+| `--timeout <ms>` | `timeout_ns`, in milliseconds |
+| `--log-level <level>` | `log_level`: trace, debug, info, warn, error, fatal |
+| `--no-color` | `no_color` |
+| `--list` | Print the matching test names and run nothing |
+| `--help` | Print the options and exit |
+
+A flag on the command line wins over a value hardcoded in `SN_TEST_INIT()`, so you can rerun a
+narrower slice of a suite without editing it.
+
+The exit code is `0` when every test passed, `1` when any failed, and `2` when the command line
+could not be parsed, which keeps a mistyped flag from reading as a broken test.
+
+### Programmatic Entry Points
 
 ```c
 SN_TEST_API int sn_test_run_all_tests(SnTestConfig *config);
+SN_TEST_API int sn_test_run_all_tests_override(SnTestConfig *config, const SnTestConfigOverride *override);
+SN_TEST_API SnTestParseResult sn_test_parse_args(SnTestConfigOverride *out, int argc, char **argv);
 ```
 
-Runs all tests and returns the number of failures (`0` = success, non-zero = failures, `-1` = init failure).
-Useful when you need a custom `main()` instead of `SN_TEST_RUN()`.
+`sn_test_run_all_tests()` runs all tests and returns the number of failures (`0` = success,
+non-zero = failures, `-1` = init failure). Use it when you need a custom `main()` instead of
+`SN_TEST_RUN()`.
+
+The other two exist for a custom `main()` that still wants the command line:
+`sn_test_parse_args()` fills an `SnTestConfigOverride` on its own, and
+`sn_test_run_all_tests_override()` applies one. An override only writes the fields it marked as
+set, which is why it can beat the init hook without needing to know what the hook did.
 
 ## Assertions
 

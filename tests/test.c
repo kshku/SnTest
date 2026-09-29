@@ -1,7 +1,7 @@
 #include <sntest/sntest.h>
 
 SN_TEST_INIT() {
-    SN_UNUSED(config);
+    SN_UNUSED(test_config);
     log_msg("Initializing tests\n", NULL);
     return true;
 }

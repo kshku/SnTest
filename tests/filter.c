@@ -1,7 +1,7 @@
 #include <sntest/sntest.h>
 
 SN_TEST_INIT() {
-    config->filter = "banana";
+    test_config->filter = "banana";
     return true;
 }
 

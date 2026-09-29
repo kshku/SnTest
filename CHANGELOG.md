@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.4.0] - 2026-09-28
+
+### Added
+- The generated entry point takes a command line. sn_test_parse_args() reads
+  --filter, --max-failures, --threads, --timeout, --log-level, --no-color, --list
+  and --help into an SnTestConfigOverride, and SN_TEST_RUN() hands it to
+  sn_test_run_all_tests_override(). --timeout takes milliseconds and stores
+  nanoseconds, since nobody types nanoseconds, and --log-level is case
+  insensitive
+- A usage error exits 2, which is distinct from the 1 that means a test failed,
+  so a CI job can tell the tests broke from the command line being wrong
+- The parameter of SN_TEST_INIT() is named test_config rather than config, so it
+  does not read like a type name at the call site
+
+### Changed
+- A flag on the command line now wins over a value hardcoded in SN_TEST_INIT().
+  The parser records which fields were actually named, and only those are
+  written over what the hook produced. That needs the set bitmask on
+  SnTestConfigOverride: a shadow config compared against zero cannot tell
+  --max-failures 0 from no --max-failures at all, so the flag would silently do
+  nothing
+- sn_test_run_all_tests() keeps its signature and now takes no override. Code
+  with its own main does not have to change
+- The platform ifdef that bounds the test and hook sections moved into two
+  helpers, because --list needed it a third time
+
+## [0.3.0] - 2026-09-28
+
 ## [0.3.0] - 2026-09-28
 
 ### Added
