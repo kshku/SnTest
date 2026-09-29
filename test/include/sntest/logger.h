@@ -57,79 +57,104 @@ typedef enum SnTestColorMode {
  */
 void sn_test_log_msg(SnTestColor fg, SnTestColor bg, int mode, const char *fmt, ...);
 
+/*
+ * The macros below pass the format string as the first variadic argument
+ * instead of naming it beside the others. The comma in front of __VA_ARGS__ is
+ * then a comma inside a call, so an absent argument list does not leave a
+ * trailing comma behind and the GNU comma-swallowing extension
+ * , ##__VA_ARGS__ is not needed. That extension is not in C, so -Wpedantic
+ * reports every one of these. A message with no conversions is still a valid
+ * call: fmt is the fourth parameter of a variadic function, not part of the
+ * variadic part, so a format string on its own is a complete argument list.
+ */
+
 /**
  * @brief Log a message with the default color and mode.
  *
- * @param msg The message (printf-style format).
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
  */
-#define log_msg(msg, ...)                                                           \
-    sn_test_log_msg(COLOR_DEFAULT, COLOR_DEFAULT, MODE_DEFAULT, msg, ##__VA_ARGS__)
+#define log_msg(...) sn_test_log_msg(COLOR_DEFAULT, COLOR_DEFAULT, MODE_DEFAULT, __VA_ARGS__)
 
 /**
  * @brief Log a message with the given foreground color.
  *
  * @param fg The foreground color.
- * @param msg The message (printf-style format).
- */
-#define log_msg_fg(fg, msg, ...)                                         \
-    sn_test_log_msg(fg, COLOR_DEFAULT, MODE_DEFAULT, msg, ##__VA_ARGS__)
-
-/**
- * @brief Log a message with the given foreground color and mode.
  *
- * @param fg The foreground color.
- * @param mode The graphics mode.
- * @param msg The message (printf-style format).
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
  */
-#define log_msg_fg_mode(fg, mode, msg, ...)                      \
-    sn_test_log_msg(fg, COLOR_DEFAULT, mode, msg, ##__VA_ARGS__)
+#define log_msg_fg(fg, ...) sn_test_log_msg(fg, COLOR_DEFAULT, MODE_DEFAULT, __VA_ARGS__)
 
 /**
  * @brief Log a message with the given background color.
  *
  * @param bg The background color.
- * @param msg The message (printf-style format).
- */
-#define log_msg_bg(bg, msg, ...)                                         \
-    sn_test_log_msg(COLOR_DEFAULT, bg, MODE_DEFAULT, msg, ##__VA_ARGS__)
-
-/**
- * @brief Log a message with the given background color and mode.
  *
- * @param bg The background color.
- * @param mode The graphics mode.
- * @param msg The message (printf-style format).
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
  */
-#define log_msg_bg_mode(bg, mode, msg, ...)                      \
-    sn_test_log_msg(COLOR_DEFAULT, bg, mode, msg, ##__VA_ARGS__)
+#define log_msg_bg(bg, ...) sn_test_log_msg(COLOR_DEFAULT, bg, MODE_DEFAULT, __VA_ARGS__)
 
 /**
  * @brief Log a message with the given mode.
  *
  * @param mode The graphics mode.
- * @param msg The message (printf-style format).
+ *
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
  */
-#define log_msg_mode(mode, msg, ...)                                        \
-    sn_test_log_msg(COLOR_DEFAULT, COLOR_DEFAULT, mode, msg, ##__VA_ARGS__)
+#define log_msg_mode(mode, ...) sn_test_log_msg(COLOR_DEFAULT, COLOR_DEFAULT, mode, __VA_ARGS__)
+
+/**
+ * @brief Log a message with the given foreground color and mode.
+ *
+ * @param fg The foreground color.
+ *
+ * @param mode The graphics mode.
+ *
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
+ */
+#define log_msg_fg_mode(fg, mode, ...) sn_test_log_msg(fg, COLOR_DEFAULT, mode, __VA_ARGS__)
+
+/**
+ * @brief Log a message with the given background color and mode.
+ *
+ * @param bg The background color.
+ *
+ * @param mode The graphics mode.
+ *
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
+ */
+#define log_msg_bg_mode(bg, mode, ...) sn_test_log_msg(COLOR_DEFAULT, bg, mode, __VA_ARGS__)
 
 /**
  * @brief Log a message with the given foreground and background colors.
  *
  * @param fg The foreground color.
+ *
  * @param bg The background color.
- * @param msg The message (printf-style format).
+ *
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
  */
-#define log_msg_color(fg, bg, msg, ...) sn_test_log_msg(fg, bg, MODE_DEFAULT, msg, ##__VA_ARGS__)
+#define log_msg_color(fg, bg, ...) sn_test_log_msg(fg, bg, MODE_DEFAULT, __VA_ARGS__)
 
 /**
  * @brief Log a message with the given color and mode.
  *
  * @param fg The foreground color.
+ *
  * @param bg The background color.
+ *
  * @param mode The graphics mode.
- * @param msg The message (printf-style format).
+ *
+ * The variadic arguments are the message, a printf-style format string, and
+ * its arguments. The message is required, the arguments are not.
  */
-#define log_msg_style(fg, bg, mode, msg, ...) sn_test_log_msg(fg, bg, mode, msg, ##__VA_ARGS__)
+#define log_msg_style(fg, bg, mode, ...) sn_test_log_msg(fg, bg, mode, __VA_ARGS__)
 
 /**
  * @brief Initialize the test logger.
