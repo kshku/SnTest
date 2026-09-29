@@ -10,6 +10,12 @@ target_link_libraries(sn_test_test PRIVATE sntest)
 
 add_test(NAME sn_test_test COMMAND sn_test_test)
 
+add_executable(sn_test_log)
+target_sources(sn_test_log PRIVATE log.c)
+target_link_libraries(sn_test_log PRIVATE sntest)
+
+add_test(NAME sn_test_log COMMAND sn_test_log)
+
 add_executable(sn_test_no_hooks)
 target_sources(sn_test_no_hooks PRIVATE no_hooks.c)
 target_link_libraries(sn_test_no_hooks PRIVATE sntest)

@@ -2,6 +2,11 @@
 
 ## [0.3.0] - 2026-09-28
 
+### Added
+- A test that calls every macro in the log_msg family, both with and without
+  arguments, so that changing how they forward their arguments cannot quietly
+  drop a form
+
 ### Changed
 - The color and escape code handling now lives in SnLogger's console sink, and
   SnLogger is pinned to v0.3.1 for it. The public API is unchanged: the
@@ -29,6 +34,13 @@
   prints in full
 - The stderr half of the sink was tracked and configured but never written to.
   Every record went to stdout
+- The log_msg family of macros no longer uses , ##__VA_ARGS__ to swallow a
+  missing argument. That is a GNU extension and is not in C, so -Wpedantic
+  reports every one of the eight macros on clang. Each one now passes the format
+  string as its first variadic argument, which puts the comma inside a call
+  where there is nothing to swallow. The call forms are unchanged, and a message
+  with no conversions is still just the format string, since fmt is a named
+  parameter rather than part of the variadic part
 
 ## [0.2.0] - 2026-09-28
 
