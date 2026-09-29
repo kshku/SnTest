@@ -60,14 +60,51 @@ typedef struct SnTestConfig {
 } SnTestConfig;
 
 /**
+ * @enum SnTestConfigSetField
+ * @brief The fields of SnTestConfig a command line can set.
+ */
+typedef enum SnTestConfigSetField {
+    SN_TEST_SET_MAX_FAILURES = SN_BIT_FLAG(0), /**< SnTestConfig::max_failures */
+    SN_TEST_SET_THREAD_COUNT = SN_BIT_FLAG(1), /**< SnTestConfig::thread_count */
+    SN_TEST_SET_TIMEOUT_NS = SN_BIT_FLAG(2), /**< SnTestConfig::timeout_ns */
+    SN_TEST_SET_FILTER = SN_BIT_FLAG(3), /**< SnTestConfig::filter */
+    SN_TEST_SET_NO_COLOR = SN_BIT_FLAG(4), /**< SnTestConfig::no_color */
+    SN_TEST_SET_LOG_LEVEL = SN_BIT_FLAG(5), /**< SnTestConfig::log_level */
+} SnTestConfigSetField;
+
+/**
+ * @struct SnTestConfigOverride
+ * @brief A partial configuration from the command line.
+ *
+ * sn_test_parse_args() fills one of these. Only the fields named in set are
+ * meaningful, and the runner applies those over whatever SN_TEST_INIT() wrote,
+ * so a flag given on the command line always wins.
+ */
+typedef struct SnTestConfigOverride {
+    SnTestConfig config; /**< Values for the fields named in set */
+    uint32_t set; /**< Bitwise or of SnTestConfigSetField */
+    bool list; /**< Print the matching test names and run nothing */
+} SnTestConfigOverride;
+
+/**
+ * @enum SnTestParseResult
+ * @brief What the caller should do after parsing the command line.
+ */
+typedef enum SnTestParseResult {
+    SN_TEST_PARSE_RUN, /**< Run the tests with the parsed override */
+    SN_TEST_PARSE_EXIT, /**< Help was asked for, exit successfully */
+    SN_TEST_PARSE_ERROR, /**< The command line was wrong, exit with 2 */
+} SnTestParseResult;
+
+/**
  * @typedef sn_test_init_fn
  * @brief Signature of the init hook.
  *
- * @param config Pointer to configuration to customize.
+ * @param test_config Pointer to configuration to customize.
  *
  * @return Returns true on success, else false (aborts the run).
  */
-typedef bool (*sn_test_init_fn)(SnTestConfig *config);
+typedef bool (*sn_test_init_fn)(SnTestConfig *test_config);
 
 /**
  * @typedef sn_test_deinit_fn
@@ -182,18 +219,21 @@ __declspec(allocate("sn_test_hooks$z")) static SnTestHook *__sn_test_hooks_end =
  * Called once before any test. If the hook returns false, the run aborts.
  * Use this to customize the SnTestConfig.
  *
- * @param config Pointer to configuration to customize.
+ * The parameter is named test_config rather than config so that it does not read
+ * like a type name at the call site.
+ *
+ * @param test_config Pointer to configuration to customize.
  *
  * @return Returns true on success, else false.
  */
 #define SN_TEST_INIT()                                                                         \
-    static bool sn_test_hook_init_impl(SnTestConfig *config);                                  \
+    static bool sn_test_hook_init_impl(SnTestConfig *test_config);                             \
     static SnTestHook sn_test_hook_init_struct = {                                             \
         SN_TEST_HOOK_INIT,                                                                     \
         {.init = &sn_test_hook_init_impl},                                                     \
     };                                                                                         \
     static SN_TEST_HOOK_SECTION SnTestHook *sn_test_hook_init_ptr = &sn_test_hook_init_struct; \
-    static bool sn_test_hook_init_impl(SnTestConfig *config)
+    static bool sn_test_hook_init_impl(SnTestConfig *test_config)
 
 /**
  * @brief Define the deinit hook.
@@ -238,6 +278,21 @@ __declspec(allocate("sn_test_hooks$z")) static SnTestHook *__sn_test_hooks_end =
     static void sn_test_hook_teardown_impl(void)
 
 /**
+ * @brief Run all the registered tests, then apply a command line override.
+ *
+ * SN_TEST_INIT() runs first and may set any field it likes. The fields named in
+ * override->set are then written over the top, so a flag given on the command
+ * line always beats a value hardcoded in the hook. If override->list is set the
+ * matching test names are printed and nothing is run.
+ *
+ * @param config Pointer to configuration (can be NULL-initialized).
+ * @param override Pointer to the command line override, or NULL for none.
+ *
+ * @return Returns the number of failures (0 on success, -1 on init failure).
+ */
+SN_TEST_API int sn_test_run_all_tests_override(SnTestConfig *config, const SnTestConfigOverride *override);
+
+/**
  * @brief Run all the registered tests.
  *
  * Also applies the logger settings (color, log level) from the config
@@ -250,18 +305,52 @@ __declspec(allocate("sn_test_hooks$z")) static SnTestHook *__sn_test_hooks_end =
 SN_TEST_API int sn_test_run_all_tests(SnTestConfig *config);
 
 /**
+ * @brief Parse a command line into a configuration override.
+ *
+ * Recognised options are --filter, --max-failures, --threads, --timeout,
+ * --log-level, --no-color, --list and --help. --timeout takes milliseconds and
+ * stores nanoseconds. --log-level takes trace, debug, info, warn, error or
+ * fatal, in any case. An empty --filter means no filter, matching the
+ * SN_TESTConfig field it feeds.
+ *
+ * Usage errors are reported on stderr and ask for --help.
+ *
+ * @param out Receives the override, zeroed first. May be NULL if only the
+ *            result matters, which is what the --help and error paths do.
+ * @param argc Argument count from main.
+ * @param argv Argument vector from main. argv[0] may be NULL.
+ *
+ * @return Returns what the caller should do next.
+ */
+SN_TEST_API SnTestParseResult sn_test_parse_args(SnTestConfigOverride *out, int argc, char **argv);
+
+/**
  * @brief Generate the entry point for the test executable.
  *
- * Initializes logging, runs all the tests with a zero-initialized config,
- * deinitializes logging and returns the exit code.
+ * Initializes logging, parses the command line, runs the tests with a
+ * zero-initialized config that the command line then overrides, deinitializes
+ * logging and returns the exit code. The exit code is 0 when every test passed,
+ * 1 when any failed, and 2 when the command line could not be parsed.
  */
-#define SN_TEST_RUN()                             \
-    int main(void) {                              \
-        sn_test_logger_init();                    \
-        SnTestConfig config = {0};                \
-        int ret = sn_test_run_all_tests(&config); \
-        sn_test_logger_deinit();                  \
-        return ret;                               \
+#define SN_TEST_RUN()                                                     \
+    int main(int argc, char **argv) {                                     \
+        sn_test_logger_init();                                            \
+        SnTestConfigOverride override = {0};                              \
+        int ret = 0;                                                      \
+        switch (sn_test_parse_args(&override, argc, argv)) {              \
+            case SN_TEST_PARSE_RUN: {                                     \
+                SnTestConfig config = {0};                                \
+                ret = sn_test_run_all_tests_override(&config, &override); \
+                break;                                                    \
+            }                                                             \
+            case SN_TEST_PARSE_EXIT:                                      \
+                break;                                                    \
+            case SN_TEST_PARSE_ERROR:                                     \
+                ret = 2;                                                  \
+                break;                                                    \
+        }                                                                 \
+        sn_test_logger_deinit();                                          \
+        return ret;                                                       \
     }
 
 #include "sntest/asserts.h"

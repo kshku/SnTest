@@ -67,16 +67,36 @@ static SnTestHook *find_hook(SnTestHook **hooks, size_t count, SnTestHookType ty
     return found;
 }
 
-static void resolve_hooks(void) {
+/* The linker delimits both sections, but macOS has no __start_/__stop_ pair, so
+ * each platform needs its own way to bound the array. Three call sites want
+ * this, so it lives here once rather than being repeated per platform. */
+static SnTest **test_section(size_t *count) {
 #if defined(SN_OS_MAC)
-    size_t count = 0;
-    SnTestHook *hooks = SN_TEST_HOOK_BEGIN_COUNT(count);
+    *count = 0;
+    return SN_TEST_BEGIN_COUNT(*count);
+#else
+    SnTest **begin = SN_TEST_BEGIN();
+    SnTest **end = SN_TEST_END();
+    *count = (size_t)(end - begin);
+    return begin;
+#endif
+}
+
+static SnTestHook **hook_section(size_t *count) {
+#if defined(SN_OS_MAC)
+    *count = 0;
+    return SN_TEST_HOOK_BEGIN_COUNT(*count);
 #else
     SnTestHook **begin = SN_TEST_HOOK_BEGIN();
     SnTestHook **end = SN_TEST_HOOK_END();
-    SnTestHook **hooks = begin;
-    size_t count = (size_t)(end - begin);
+    *count = (size_t)(end - begin);
+    return begin;
 #endif
+}
+
+static void resolve_hooks(void) {
+    size_t count = 0;
+    SnTestHook **hooks = hook_section(&count);
     if (!hooks || count == 0) return;
 
     SnTestHook *init = find_hook(hooks, count, SN_TEST_HOOK_INIT);
@@ -148,16 +168,26 @@ static void *run_test_worker(void *data) {
     return NULL;
 }
 
-static void run_tests(SnTestConfig *config) {
-#if defined(SN_OS_MAC)
+/* Prints the names the run would pick. Uses the same substring match as
+ * run_one_test, so the list and the run cannot disagree about what matches. */
+static void list_tests(const char *filter) {
     size_t count = 0;
-    SnTest **tests = SN_TEST_BEGIN_COUNT(count);
-#else
-    SnTest **begin = SN_TEST_BEGIN();
-    SnTest **end = SN_TEST_END();
-    SnTest **tests = begin;
-    size_t count = (size_t)(end - begin);
-#endif
+    SnTest **tests = test_section(&count);
+    if (!tests || count == 0) return;
+
+    const char *match = (filter && filter[0]) ? filter : NULL;
+
+    for (size_t i = 0; i < count; ++i) {
+        SnTest *it = tests[i];
+        if (!it) continue;
+        if (match && !strstr(it->name, match)) continue;
+        printf("%s\n", it->name);
+    }
+}
+
+static void run_tests(SnTestConfig *config) {
+    size_t count = 0;
+    SnTest **tests = test_section(&count);
     if (!tests || count == 0) return;
 
     SnTestRunner runner = {0};
@@ -201,6 +231,10 @@ static void run_tests(SnTestConfig *config) {
 }
 
 int sn_test_run_all_tests(SnTestConfig *config) {
+    return sn_test_run_all_tests_override(config, NULL);
+}
+
+int sn_test_run_all_tests_override(SnTestConfig *config, const SnTestConfigOverride *override) {
     SnTimePoint total_start = sn_time_point_now();
 
     resolve_hooks();
@@ -210,8 +244,30 @@ int sn_test_run_all_tests(SnTestConfig *config) {
         return -1;
     }
 
+    /* After the hook, so that a flag on the command line beats a value the test
+     * author hardcoded. Only the fields that were actually named, which is why
+     * this cannot be a plain copy of the whole config. */
+    if (override) {
+        if (override->set & SN_TEST_SET_MAX_FAILURES)
+            config->max_failures = override->config.max_failures;
+        if (override->set & SN_TEST_SET_THREAD_COUNT)
+            config->thread_count = override->config.thread_count;
+        if (override->set & SN_TEST_SET_TIMEOUT_NS)
+            config->timeout_ns = override->config.timeout_ns;
+        if (override->set & SN_TEST_SET_FILTER) config->filter = override->config.filter;
+        if (override->set & SN_TEST_SET_NO_COLOR) config->no_color = override->config.no_color;
+        if (override->set & SN_TEST_SET_LOG_LEVEL) config->log_level = override->config.log_level;
+    }
+
     if (config->no_color) sn_test_logger_disable_color();
     sn_test_set_log_level(config->log_level);
+
+    if (override && override->list) {
+        /* The same filter the run would use, so that what is listed and what
+         * would run cannot disagree. */
+        list_tests(config->filter);
+        return 0;
+    }
 
     run_tests(config);
 

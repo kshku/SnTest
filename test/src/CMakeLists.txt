@@ -7,6 +7,7 @@ set(HEADERFILES
 set(SRCS
     sntest.c
     logger.c
+    args.c
 )
 
 set(INCLUDE_BASE "${PROJECT_SOURCE_DIR}/test/include/sntest")

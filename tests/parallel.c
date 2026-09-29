@@ -1,7 +1,7 @@
 #include <sntest/sntest.h>
 
 SN_TEST_INIT() {
-    config->thread_count = 4;
+    test_config->thread_count = 4;
     return true;
 }
 

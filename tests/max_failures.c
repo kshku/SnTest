@@ -1,7 +1,7 @@
 #include <sntest/sntest.h>
 
 SN_TEST_INIT() {
-    config->max_failures = 1;
+    test_config->max_failures = 1;
     return true;
 }
 
