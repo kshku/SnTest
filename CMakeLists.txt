@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.31)
 
-project(SnTest VERSION 0.4.2 DESCRIPTION "Testing util" LANGUAGES C)
+project(SnTest VERSION 0.4.3 DESCRIPTION "Testing util" LANGUAGES C)
 
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -9,25 +9,25 @@ set(CMAKE_C_STANDARD 17)
 include(FetchContent)
 FetchContent_Declare(sncore
     GIT_REPOSITORY https://github.com/kshku/SnCore.git
-    GIT_TAG v0.3.1
+    GIT_TAG v0.3.2
 )
 FetchContent_MakeAvailable(sncore)
 
 FetchContent_Declare(snlogger
     GIT_REPOSITORY https://github.com/kshku/SnLogger.git
-    GIT_TAG v0.3.2
+    GIT_TAG v0.3.5
 )
 FetchContent_MakeAvailable(snlogger)
 
 FetchContent_Declare(snthreads
     GIT_REPOSITORY https://github.com/kshku/SnThreads.git
-    GIT_TAG v0.2.2
+    GIT_TAG v0.2.5
 )
 FetchContent_MakeAvailable(snthreads)
 
 FetchContent_Declare(sntime
     GIT_REPOSITORY https://github.com/kshku/SnTime.git
-    GIT_TAG v0.2.0
+    GIT_TAG v0.2.3
 )
 FetchContent_MakeAvailable(sntime)
 
