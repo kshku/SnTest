@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.31)
 
-project(SnTest VERSION 0.4.3 DESCRIPTION "Testing util" LANGUAGES C)
+project(SnTest VERSION 0.4.4 DESCRIPTION "Testing util" LANGUAGES C)
 
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(sncore)
 
 FetchContent_Declare(snlogger
     GIT_REPOSITORY https://github.com/kshku/SnLogger.git
-    GIT_TAG v0.3.5
+    GIT_TAG v0.3.6
 )
 FetchContent_MakeAvailable(snlogger)
 

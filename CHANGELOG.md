@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.4] - 2026-10-02
+
+### Changed
+- Take snlogger v0.3.6 rather than v0.3.5
+
 ## [0.4.3] - 2026-10-02
 
 ### Changed
