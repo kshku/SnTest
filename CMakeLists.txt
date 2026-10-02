@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.31)
 
-project(SnTest VERSION 0.4.1 DESCRIPTION "Testing util" LANGUAGES C)
+project(SnTest VERSION 0.4.2 DESCRIPTION "Testing util" LANGUAGES C)
 
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -41,6 +41,7 @@ set(gcc_clang_comp "$<COMPILE_LANG_AND_ID:C,Clang,GNU>")
 set(msvc_comp "$<COMPILE_LANG_AND_ID:C,MSVC>")
 
 target_compile_options(sn_test_configs INTERFACE "$<${gcc_clang_comp}:-Wall;-Wextra;-Wformat;-Wuninitialized;-Wpedantic>")
+target_compile_options(sn_test_configs INTERFACE "$<${gcc_clang_comp}:-Wconversion;-Wsign-conversion>")
 
 target_compile_options(sn_test_configs INTERFACE "$<${gcc_clang_comp}:-fvisibility=hidden>")
 
