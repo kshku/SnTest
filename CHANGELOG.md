@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.3] - 2026-10-02
+
+### Changed
+- Take sncore v0.3.2 rather than v0.3.1
+- Take snlogger v0.3.5 rather than v0.3.2
+- Take snthreads v0.2.5 rather than v0.2.2
+- Take sntime v0.2.3 rather than v0.2.0
+
 ## [0.4.2] - 2026-10-02
 
 ### Changed
